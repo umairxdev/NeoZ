@@ -25,7 +25,7 @@ const REQUEST_HEADERS = {
   'Cache-Control': 'no-cache',
 };
 
-const FETCH_TIMEOUT_MS = 8000;
+const FETCH_TIMEOUT_MS = 5000;
 
 /**
  * Fetches and parses a single RSS feed.
