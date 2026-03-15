@@ -30,43 +30,35 @@ async function fetchFeed(source: FeedSource): Promise<Article[]> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-    try {
-      const response = await fetch(source.url, {
-        headers: REQUEST_HEADERS,
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
+    const response = await fetch(source.url, {
+      headers: REQUEST_HEADERS,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
 
-      if (!response.ok) {
-        return [];
-      }
-      let xml = await response.text();
-    } catch (fetchError: unknown) {
-      clearTimeout(timeoutId);
-      const isAbort = fetchError instanceof Error && fetchError.name === 'AbortError';
-      console.error(
-        `Failed to fetch feed ${source.sourceName} (${source.url}):`,
-        isAbort ? `Request timed out after ${FETCH_TIMEOUT_MS}ms` : fetchError
-      );
+    if (!response.ok) {
       return [];
     }
-
+    
+    const xml = await response.text();
     const feed = await parser.parseString(xml);
+    
     const articles: Article[] = [];
-
-    // Take up to 20 most recent items per feed
-    const items = feed.items.slice(0, 20);
-
+    const items = feed.items.slice(0, 15);
+    
     for (const item of items) {
       const article = normalizeItem(item, source);
       if (article) {
         articles.push(article);
       }
     }
-
     return articles;
-  } catch (error) {
-    console.error(`Failed to parse feed ${source.sourceName} (${source.url}):`, error);
+  } catch (fetchError: unknown) {
+    const isAbort = fetchError instanceof Error && fetchError.name === 'AbortError';
+    console.error(
+      `Failed to fetch feed ${source.sourceName} (${source.url}):`,
+      isAbort ? `Request timed out after ${FETCH_TIMEOUT_MS}ms` : fetchError
+    );
     return [];
   }
 }
