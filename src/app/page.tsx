@@ -1,65 +1,135 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { Suspense, useState, useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
+import { HeroArticle } from '@/components/news/HeroArticle';
+import { InfiniteArticleGrid } from '@/components/news/InfiniteArticleGrid';
+import { TrendingTopics } from '@/components/trending/TrendingTopics';
+import { ArticleSkeleton } from '@/components/news/ArticleSkeleton';
+
+const LOCAL_STORAGE_PREFS = 'newsstream_preferences';
+
+function NewsFeed({ interests }: { interests: string[] }) {
+  const [articles, setArticles] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchInitialNews();
+  }, []);
+
+  async function fetchInitialNews() {
+    try {
+      const isDev = process.env.NODE_ENV === 'development';
+      const baseUrl = isDev ? 'http://localhost:3000' : 'https://' + process.env.VERCEL_URL;
+      
+      const interestParam = interests.length > 0 ? `&interests=${encodeURIComponent(interests.join(','))}` : '';
+      const res = await fetch(`${baseUrl}/api/news?limit=20${interestParam}`, { cache: 'no-store' });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setArticles(data.data || []);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <div className="aspect-[21/9] bg-muted animate-pulse rounded-2xl" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <ArticleSkeleton count={6} />
+        </div>
+      </div>
+    );
+  }
+
+  if (!articles || articles.length === 0) {
+    return (
+      <div className="py-20 text-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
+        <p className="text-lg">Initializing RSS feeds...</p>
+        <p className="text-sm mt-2 text-muted-foreground/60">Feeds take a moment to load on first visit.</p>
+      </div>
+    );
+  }
+
+  const heroArticle = articles[0];
+  const gridArticles = articles.slice(1);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="space-y-12 stagger-children">
+      {/* Hero Section */}
+      <section>
+        <HeroArticle article={heroArticle} />
+      </section>
+
+      {/* Editorial Section Header */}
+      <section>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-0.5 bg-[#1bab89] shadow-[0_0_10px_rgba(27,171,137,0.5)]" />
+            <h2 className="text-2xl md:text-3xl font-normal tracking-tight" style={{ fontFamily: 'Instrument Serif, Georgia, serif' }}>
+              {interests.length > 0 ? 'Your Personalized Feed' : 'Latest Stories'}
+            </h2>
+          </div>
+        </div>
+        
+        {/* Editorial Grid - Asymmetric on Desktop */}
+        <InfiniteArticleGrid 
+          initialArticles={gridArticles} 
+          endpoint={`/api/news?interests=${encodeURIComponent(interests.join(','))}`}
+          className="editorial-grid" 
+          limit={20}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+      </section>
+    </div>
+  );
+}
+
+export default function HomePage() {
+  const [interests, setInterests] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(LOCAL_STORAGE_PREFS);
+      if (stored) {
+        const prefs = JSON.parse(stored);
+        setInterests(prefs.interests || []);
+      }
+    } catch {}
+  }, []);
+
+  return (
+    <div className="container py-6 md:py-10">
+      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+        {/* Main Content */}
+        <div className="w-full lg:w-3/4 xl:w-2/3">
+          <Suspense fallback={
+            <div className="space-y-8">
+              <div className="aspect-[21/9] bg-muted animate-pulse rounded-2xl" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <ArticleSkeleton count={6} />
+              </div>
+            </div>
+          }>
+            <NewsFeed interests={interests} />
+          </Suspense>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+        
+        {/* Sidebar - Hidden on Mobile */}
+        <aside className="hidden lg:block w-full lg:w-1/4 xl:w-1/3 space-y-8">
+          <div className="sticky top-32">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-0.5 bg-[#1bab89] shadow-[0_0_10px_rgba(27,171,137,0.5)]" />
+              <h3 className="text-lg font-semibold tracking-tight">Trending</h3>
+            </div>
+            <TrendingTopics />
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
