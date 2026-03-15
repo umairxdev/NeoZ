@@ -40,7 +40,7 @@ async function fetchFeed(source: FeedSource): Promise<Article[]> {
       if (!response.ok) {
         return [];
       }
-      const xml = await response.text();
+      let xml = await response.text();
     } catch (fetchError: unknown) {
       clearTimeout(timeoutId);
       const isAbort = fetchError instanceof Error && fetchError.name === 'AbortError';
