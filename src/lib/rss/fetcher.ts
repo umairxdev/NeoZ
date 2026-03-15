@@ -62,8 +62,8 @@ async function fetchFeed(source: FeedSource): Promise<Article[]> {
     const feed = await parser.parseString(xml);
     const articles: Article[] = [];
 
-    // Take up to 20 most recent items per feed
-    const items = feed.items.slice(0, 20);
+    // Take up to 15 most recent items per feed
+    const items = feed.items.slice(0, 15);
 
     for (const item of items) {
       const article = normalizeItem(item, source);
