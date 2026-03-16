@@ -1,36 +1,137 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NeoZ — Personalized News, No Login Required
 
-## Getting Started
+NeoZ is a modern news aggregation platform that pulls from 40+ trusted RSS sources worldwide and learns what you care about — without ever asking you to sign up.
 
-First, run the development server:
+Built with Next.js 16, deployed on Vercel, and designed to be fast, clean, and genuinely useful.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+Live at: [neoz.vercel.app](https://neoz.vercel.app)
+
+---
+
+## What It Does
+
+- Aggregates articles across 11 categories: Technology, AI, Science, Business, Sports, World, Pakistan, South Asia, and more
+- Learns your interests automatically as you like, bookmark, or hide articles
+- Personalizes your feed server-side via cookie-based interest tracking — no account needed
+- Full-text search across all articles
+- Dark/Light mode with system preference detection
+- Mobile-first responsive design with bottom navigation
+
+---
+
+## Tech Stack
+
+| Layer | Tech |
+|---|---|
+| Framework | Next.js 16 (React 19) |
+| Styling | Tailwind CSS 4 + custom design system |
+| Components | Custom shadcn-inspired UI |
+| Fonts | Syne (headings) + Outfit (body) |
+| RSS Parsing | rss-parser |
+| Deployment | Vercel (Serverless) |
+
+---
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── api/            # News, search, trending endpoints
+│   ├── article/[id]/   # Article detail pages
+│   ├── category/[slug] # Category pages
+│   ├── dashboard/      # User preferences
+│   └── search/         # Search UI
+├── components/
+│   ├── layout/         # Header, Footer, Navigation
+│   ├── news/           # Article cards, grids, hero
+│   └── ui/             # Reusable UI components
+└── lib/
+    └── rss/            # Fetching, caching, normalization
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Personalization Engine
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+NeoZ scores your interests based on every interaction:
 
-## Learn More
+| Signal | Weight |
+|---|---|
+| Article category match | +50 pts |
+| Article tags | +20 pts |
+| Title keywords | +15 pts |
+| Source | +10 pts |
 
-To learn more about Next.js, take a look at the following resources:
+Interests are stored in a `neoz_interests` cookie (365-day expiry, comma-separated). The API reads this on every request to serve a personalized feed without a database or user account.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## API Endpoints
 
-## Deploy on Vercel
+| Endpoint | Description |
+|---|---|
+| `/api/news` | Main personalized feed |
+| `/api/news/[category]` | Category-specific feed |
+| `/api/search` | Full-text search |
+| `/api/trending` | Trending topics |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## RSS System
+
+- Parallel fetching in batches of 10 feeds
+- 8-second per-feed timeout
+- Deduplication by URL and title
+- Content normalization (500-word truncation)
+- 10-minute cache refresh interval
+
+---
+
+## News Sources
+
+Sources span major global publishers across categories:
+
+- **Technology:** The Verge, Ars Technica, Wired, MIT Tech Review, Hacker News
+- **AI:** OpenAI, Google AI, NVIDIA AI, Towards Data Science, AI News
+- **Science:** Nature, Science Daily, Space.com
+- **Business:** Financial Times, CNBC, The Economist, Fortune
+- **Sports:** Cricbuzz, Sky Sports, BBC Sport
+- **World:** BBC News, Al Jazeera, Reuters, NY Times
+- **Pakistan:** Dawn, The News International, ARY News
+
+---
+
+## SEO
+
+- Dynamic Open Graph + Twitter Card metadata per page
+- JSON-LD structured data (WebSite, Organization, SearchAction)
+- Auto-generated sitemap with hourly category updates
+- Server-side rendering for full crawlability
+
+---
+
+## Deployment
+
+Live at: [neoz.vercel.app](https://neoz.vercel.app)
+
+Deployed on Vercel with automatic Git-based deployments and edge caching.
+
+---
+
+## Roadmap
+
+- [ ] User accounts with cross-device cloud sync
+- [ ] PWA + offline reading support
+- [ ] Push notifications for breaking news
+- [ ] Email newsletter and news digest
+- [ ] Readability mode
+- [ ] Multi-language support
+
+---
+
+## License
+
+MIT
