@@ -53,14 +53,14 @@ export function ArticleCard({ article, featured = false, index = 0 }: ArticleCar
           </time>
         </div>
         <Link href={articleUrl} className="group-hover:text-[#1bab89] transition-colors duration-200">
-          <h3 className={`font-normal tracking-tight line-clamp-2 leading-tight ${featured ? 'text-lg md:text-2xl lg:text-3xl' : 'text-sm md:text-lg'}`} style={{ fontFamily: 'Instrument Serif, Georgia, serif' }}>
+          <h3 className={`font-normal tracking-tight line-clamp-2 leading-tight ${featured ? 'text-lg md:text-2xl lg:text-3xl' : 'text-base md:text-lg'}`} style={{ fontFamily: 'Instrument Serif, Georgia, serif' }}>
             {article.title}
           </h3>
         </Link>
       </CardHeader>
 
       <CardContent className={`flex-1 ${featured ? 'p-4 md:p-6 py-1 md:py-2' : 'p-3 md:p-4 py-0 md:py-0'}`}>
-        <p className={`text-muted-foreground line-clamp-2 md:line-clamp-3 ${featured ? 'text-sm md:text-base' : 'text-xs md:text-sm'} leading-relaxed`}>
+        <p className={`text-muted-foreground line-clamp-2 md:line-clamp-3 ${featured ? 'text-sm md:text-base' : 'text-sm md:text-sm'} leading-relaxed`}>
           {article.description}
         </p>
       </CardContent>

@@ -68,10 +68,10 @@ export default function ArticlePage() {
   return (
     <div className="container py-6 md:py-8 max-w-4xl mx-auto px-4">
       {/* Back Button */}
-      <Button variant="ghost" size="sm" className="mb-6 -ml-3 text-muted-foreground hover:text-[#1bab89]" render={<Link href="/" />}>
+      <Button variant="ghost" size="sm" className="mb-6 -ml-3 text-muted-foreground hover:text-[#1bab89]" onClick={() => window.history.back()}>
         <span>
           <ArrowLeft className="mr-2 h-4 w-4 inline" />
-          Back to Feed
+          Back
         </span>
       </Button>
 

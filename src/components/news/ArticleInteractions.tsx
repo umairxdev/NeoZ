@@ -8,6 +8,7 @@ import { Article } from '@/types';
 
 const LOCAL_STORAGE_KEY = 'newsstream_bookmarks';
 const PREFERENCES_KEY = 'newsstream_preferences';
+const INTERESTS_COOKIE = 'neoz_interests';
 
 function getLocalPreferences() {
   try {
@@ -19,6 +20,12 @@ function getLocalPreferences() {
 
 function setLocalPreferences(prefs: any) {
   localStorage.setItem(PREFERENCES_KEY, JSON.stringify(prefs));
+  // Also set cookie for server-side access
+  if (prefs.interests && prefs.interests.length > 0) {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + 365 * 24 * 60 * 60 * 1000);
+    document.cookie = `${INTERESTS_COOKIE}=${encodeURIComponent(prefs.interests.join(','))};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+  }
 }
 
 function getLocalBookmarks(): Article[] {

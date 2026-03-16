@@ -74,7 +74,15 @@ export default function CategoryPage() {
       const stored = localStorage.getItem(LOCAL_STORAGE_PREFS);
       if (stored) {
         const prefs = JSON.parse(stored);
-        setInterests(prefs.interests || []);
+        const userInterests = prefs.interests || [];
+        setInterests(userInterests);
+        
+        // Sync interests to cookie for server-side personalization
+        if (userInterests.length > 0) {
+          const expires = new Date();
+          expires.setTime(expires.getTime() + 365 * 24 * 60 * 60 * 1000);
+          document.cookie = `neoz_interests=${encodeURIComponent(userInterests.join(','))};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+        }
       }
     } catch {}
   }, []);
