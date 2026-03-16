@@ -25,11 +25,8 @@ async function fetchCategoryNews(category: string) {
     return { data: [] };
   }
 
-  const isDev = process.env.NODE_ENV === 'development';
-  const baseUrl = isDev ? 'http://localhost:3000' : 'https://' + process.env.VERCEL_URL;
-  
   try {
-    const res = await fetch(`${baseUrl}/api/news/${encodeURIComponent(category)}`, { cache: 'no-store' });
+    const res = await fetch(`/api/news/${encodeURIComponent(category)}`, { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to fetch');
     return res.json();
   } catch (e) {

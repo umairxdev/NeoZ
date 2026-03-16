@@ -28,10 +28,7 @@ export default function ArticlePage() {
     
     async function fetchArticle() {
       try {
-        const isDev = process.env.NODE_ENV === 'development';
-        const baseUrl = isDev ? 'http://localhost:3000' : 'https://' + process.env.VERCEL_URL;
-        
-        const res = await fetch(`${baseUrl}/api/news?limit=500`, { cache: 'no-store' });
+        const res = await fetch(`/api/news?limit=500`, { cache: 'no-store' });
         
         if (!res.ok) {
           setError('Failed to fetch articles');

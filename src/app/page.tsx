@@ -19,11 +19,8 @@ function NewsFeed({ interests }: { interests: string[] }) {
 
   async function fetchInitialNews() {
     try {
-      const isDev = process.env.NODE_ENV === 'development';
-      const baseUrl = isDev ? 'http://localhost:3000' : 'https://' + process.env.VERCEL_URL;
-      
       const interestParam = interests.length > 0 ? `&interests=${encodeURIComponent(interests.join(','))}` : '';
-      const res = await fetch(`${baseUrl}/api/news?limit=20${interestParam}`, { cache: 'no-store' });
+      const res = await fetch(`/api/news?limit=20${interestParam}`, { cache: 'no-store' });
       
       if (res.ok) {
         const data = await res.json();
