@@ -34,8 +34,15 @@ export const RSS_FEEDS: FeedSource[] = [
   { url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', category: 'World', sourceName: 'NY Times World' },
   { url: 'https://feeds.reuters.com/reuters/worldNews', category: 'World', sourceName: 'Reuters World' },
 
-  // Sports
-  { url: 'https://rss.nytimes.com/services/xml/rss/nyt/Sports.xml', category: 'Sports', sourceName: 'NY Times Sports' },
+  // Sports - Cricket
+  { url: 'https://www.cricbuzz.com/info/rssfeeds/rcurrentstory.xml', category: 'Sports', sourceName: 'Cricbuzz' },
+  { url: 'https://www.cricketaddictor.com/feed/', category: 'Sports', sourceName: 'Cricket Addictor' },
+  
+  // Sports - Football  
+  { url: 'https://www.skysports.com/rss/12022', category: 'Sports', sourceName: 'Sky Sports Football' },
+  { url: 'https://www.bbc.com/sport/football/rss.xml', category: 'Sports', sourceName: 'BBC Football' },
+  
+  // Sports - General
   { url: 'https://www.skysports.com/rss/12040', category: 'Sports', sourceName: 'Sky Sports' },
   { url: 'http://feeds.bbci.co.uk/sport/rss.xml', category: 'Sports', sourceName: 'BBC Sport' },
 
@@ -62,5 +69,4 @@ export const RSS_FEEDS: FeedSource[] = [
   // South Asia & Region
   { url: 'http://feeds.bbci.co.uk/news/world/asia/rss.xml', category: 'South Asia', sourceName: 'BBC Asia' },
   { url: 'https://www.dawn.com/feeds/world', category: 'South Asia', sourceName: 'Dawn World' },
-  { url: 'https://feeds.reuters.com/reuters/INtopNews', category: 'South Asia', sourceName: 'Reuters India' },
 ];

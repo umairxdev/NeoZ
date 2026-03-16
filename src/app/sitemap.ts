@@ -1,11 +1,20 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const isDev = process.env.NODE_ENV === 'development';
-  const baseUrl = isDev ? 'http://localhost:3000' : 'https://' + (process.env.VERCEL_URL || 'newsstream.vercel.app');
+  const baseUrl = 'https://neoz.news';
 
   const categories = [
-    'technology', 'business', 'world', 'science', 'ai', 'sports', 'health', 'entertainment', 'politics'
+    'technology', 
+    'business', 
+    'world', 
+    'science', 
+    'ai', 
+    'sports', 
+    'health', 
+    'entertainment', 
+    'politics',
+    'pakistan',
+    'south-asia'
   ];
 
   const categoryUrls = categories.map(category => ({
@@ -30,16 +39,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.5,
     },
     {
-      url: `${baseUrl}/signup`,
+      url: `${baseUrl}/dashboard`,
       lastModified: new Date(),
-      changeFrequency: 'yearly',
-      priority: 0.3,
-    },
-    {
-      url: `${baseUrl}/login`,
-      lastModified: new Date(),
-      changeFrequency: 'yearly',
-      priority: 0.3,
+      changeFrequency: 'monthly',
+      priority: 0.4,
     }
   ];
 }

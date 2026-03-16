@@ -3,11 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Bookmark, Heart, Settings, Slash, Loader2, ArrowRight, Sparkles } from 'lucide-react';
+import { Bookmark, Heart, Settings, Slash, Loader2, ArrowRight, Sparkles, ChevronDown, X } from 'lucide-react';
 import { Article } from '@/types';
 
 const LOCAL_STORAGE_BOOKMARKS = 'newsstream_bookmarks';
@@ -37,17 +36,44 @@ function setLocalPreferences(prefs: any) {
   localStorage.setItem(LOCAL_STORAGE_PREFS, JSON.stringify(prefs));
 }
 
-function NeoZLogo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
-  const textSize = size === 'sm' ? 'text-lg' : size === 'lg' ? 'text-3xl' : 'text-xl';
+function DropdownSection({ 
+  title, 
+  icon: Icon, 
+  isOpen, 
+  onToggle, 
+  children,
+  count 
+}: { 
+  title: string; 
+  icon: any; 
+  isOpen: boolean; 
+  onToggle: () => void;
+  children: React.ReactNode;
+  count?: number;
+}) {
   return (
-    <Link href="/" className="flex items-center gap-0.5 group">
-      <span className={`${textSize} font-extrabold tracking-tight`} style={{ fontFamily: 'Syne, sans-serif' }}>
-        Neo
-      </span>
-      <span className={`${textSize} font-extrabold tracking-tight text-[#1bab89] drop-shadow-[0_0_10px_rgba(27,171,137,0.6)]`}>
-        Z
-      </span>
-    </Link>
+    <div className="border border-border/50 rounded-xl overflow-hidden">
+      <button 
+        onClick={onToggle}
+        className="w-full flex items-center justify-between p-4 bg-card hover:bg-accent/50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <Icon className="h-5 w-5 text-[#1bab89]" />
+          <span className="font-medium">{title}</span>
+          {count !== undefined && count > 0 && (
+            <Badge variant="secondary" className="bg-[#1bab89]/20 text-[#1bab89] border-0 text-xs">
+              {count}
+            </Badge>
+          )}
+        </div>
+        <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      {isOpen && (
+        <div className="p-4 border-t border-border/50 bg-card/50">
+          {children}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -55,6 +81,7 @@ export default function DashboardPage() {
   const [prefs, setPrefs] = useState<any>(null);
   const [bookmarkedArticles, setBookmarkedArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [openSections, setOpenSections] = useState<string[]>(['bookmarks']);
 
   useEffect(() => {
     loadData();
@@ -72,6 +99,14 @@ export default function DashboardPage() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  function toggleSection(section: string) {
+    setOpenSections(prev => 
+      prev.includes(section) 
+        ? prev.filter(s => s !== section)
+        : [...prev, section]
+    );
   }
 
   function handleRemoveBookmark(url: string) {
@@ -100,18 +135,15 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="container py-6 md:py-8 max-w-4xl mx-auto">
+    <div className="container py-6 md:py-8 max-w-4xl mx-auto px-4 pb-24 md:pb-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div className="flex items-center gap-4">
-          <div className="flex-shrink-0">
-            <NeoZLogo size="lg" />
-          </div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
+        <div className="flex items-center gap-3 md:gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>
+            <h1 className="text-xl md:text-3xl font-bold tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>
               Dashboard
             </h1>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-xs md:text-sm">
               Your saved articles & preferences.
             </p>
           </div>
@@ -119,7 +151,7 @@ export default function DashboardPage() {
         
         <div className="flex-shrink-0">
           <Link href="/">
-            <Button className="bg-[#1bab89] text-black hover:bg-[#158a6f]">
+            <Button className="bg-[#1bab89] text-black hover:bg-[#158a6f] w-full md:w-auto">
               <Sparkles className="mr-2 h-4 w-4" />
               Browse Feed
             </Button>
@@ -127,213 +159,163 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="bookmarks" className="w-full">
-        <TabsList className="mb-6 grid w-full grid-cols-2 md:grid-cols-4 h-auto p-1.5 bg-muted/50 rounded-xl gap-1">
-          <TabsTrigger 
-            value="bookmarks" 
-            className="py-2.5 flex items-center justify-center gap-2 data-[state=active]:bg-[#1bab89] data-[state=active]:text-black rounded-lg"
-          >
-            <Bookmark className="h-4 w-4" /> 
-            <span>Saved</span>
-            {bookmarkedArticles.length > 0 && (
-              <Badge variant="secondary" className="ml-1 bg-[#1bab89]/20 text-[#1bab89] border-0 text-xs">
-                {bookmarkedArticles.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger 
-            value="likes" 
-            className="py-2.5 flex items-center justify-center gap-2 data-[state=active]:bg-[#1bab89] data-[state=active]:text-black rounded-lg"
-          >
-            <Heart className="h-4 w-4" /> 
-            <span>Liked</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="interests" 
-            className="py-2.5 flex items-center justify-center gap-2 data-[state=active]:bg-[#1bab89] data-[state=active]:text-black rounded-lg"
-          >
-            <Settings className="h-4 w-4" /> 
-            <span>Interests</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="muted" 
-            className="py-2.5 flex items-center justify-center gap-2 data-[state=active]:bg-[#1bab89] data-[state=active]:text-black rounded-lg"
-          >
-            <Slash className="h-4 w-4" /> 
-            <span>Hidden</span>
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="bookmarks" className="mt-0">
-          <Card className="border-border/50 bg-card/50">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold">Saved Articles</CardTitle>
-              <CardDescription>Your bookmarked articles for later reading.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {bookmarkedArticles.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Bookmark className="mx-auto h-10 w-10 opacity-20 mb-4" />
-                  <p className="text-base">No saved articles yet.</p>
-                  <p className="text-sm mt-2">Save articles while browsing.</p>
-                  <Link href="/">
-                    <Button className="mt-6 bg-[#1bab89] text-black hover:bg-[#158a6f]">
-                      Browse Articles <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
+      <div className="space-y-3">
+        {/* Saved Articles */}
+        <DropdownSection 
+          title="Saved Articles" 
+          icon={Bookmark}
+          isOpen={openSections.includes('bookmarks')}
+          onToggle={() => toggleSection('bookmarks')}
+          count={bookmarkedArticles.length}
+        >
+          {bookmarkedArticles.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Bookmark className="mx-auto h-8 w-8 opacity-20 mb-3" />
+              <p className="text-sm">No saved articles yet.</p>
+              <Link href="/">
+                <Button className="mt-4 bg-[#1bab89] text-black hover:bg-[#158a6f] text-sm py-1.5">
+                  Browse Articles <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              {bookmarkedArticles.map(article => (
+                <div 
+                  key={article.id} 
+                  className="flex items-center justify-between p-2 border border-border/30 rounded-lg hover:border-[#1bab89]/30 transition-colors"
+                >
+                  <Link href={`/article/${article.id}`} className="flex-1 min-w-0 mr-3">
+                    <p className="text-sm font-medium line-clamp-2 hover:text-[#1bab89] transition-colors">
+                      {article.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {article.source} • {article.category}
+                    </p>
                   </Link>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-muted-foreground hover:text-destructive flex-shrink-0 h-8 w-8 p-0"
+                    onClick={() => handleRemoveBookmark(article.url)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
-              ) : (
-                <div className="grid gap-3">
-                  {bookmarkedArticles.map(article => (
-                    <div 
-                      key={article.id} 
-                      className="flex items-center justify-between p-3 border border-border/50 rounded-lg hover:border-[#1bab89]/30 transition-colors"
-                    >
-                      <div className="flex-1 min-w-0 mr-4">
-                        <Link href={`/article/${article.id}`} className="font-medium text-sm line-clamp-2 hover:text-[#1bab89] transition-colors">
-                          {article.title}
-                        </Link>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                          <span>{article.source}</span>
-                          <span>•</span>
-                          <span>{article.category}</span>
-                        </div>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-muted-foreground hover:text-destructive flex-shrink-0"
-                        onClick={() => handleRemoveBookmark(article.url)}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="likes" className="mt-0">
-          <Card className="border-border/50 bg-card/50">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold">Liked Articles</CardTitle>
-              <CardDescription>Articles you liked to personalize your feed.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {(!prefs?.likedArticles || prefs.likedArticles.length === 0) ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Heart className="mx-auto h-10 w-10 opacity-20 mb-4" />
-                  <p className="text-base">No liked articles yet.</p>
-                  <p className="text-sm mt-1">Like articles to personalize your feed!</p>
-                  <Link href="/">
-                    <Button className="mt-6 bg-[#1bab89] text-black hover:bg-[#158a6f]">
-                      Browse Articles <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {prefs.likedArticles.map((url: string, index: number) => (
-                    <div 
-                      key={index} 
-                      className="flex items-center justify-between p-3 border border-border/50 rounded-lg"
-                    >
-                      <div className="flex-1 min-w-0 mr-4">
-                        <p className="text-sm truncate text-muted-foreground">{url}</p>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-muted-foreground hover:text-destructive flex-shrink-0"
-                        onClick={() => handleRemoveLike(url)}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="interests" className="mt-0">
-          <Card className="border-border/50 bg-card/50">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold">Your Interests</CardTitle>
-              <CardDescription>Topics learned from your likes.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {prefs?.interests && prefs.interests.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {prefs.interests.map((interest: string) => (
-                    <Badge 
-                      key={interest} 
-                      variant="secondary" 
-                      className="px-4 py-2 text-sm bg-[#1bab89]/10 text-[#1bab89] border border-[#1bab89]/30 rounded-full"
-                    >
-                      {interest}
-                    </Badge>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Settings className="mx-auto h-10 w-10 opacity-20 mb-4" />
-                  <p className="text-base">No interests yet.</p>
-                  <p className="text-sm mt-1">Like articles to train your feed!</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+              ))}
+            </div>
+          )}
+        </DropdownSection>
 
-        <TabsContent value="muted" className="mt-0">
-          <Card className="border-border/50 bg-card/50">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-semibold">Hidden Content</CardTitle>
-              <CardDescription>Topics and sources you've hidden.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {((prefs?.mutedTopics?.length ?? 0) === 0 && (prefs?.mutedSources?.length ?? 0) === 0) ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Slash className="mx-auto h-10 w-10 opacity-20 mb-4" />
-                  <p className="text-base">Nothing hidden yet.</p>
-                  <p className="text-sm mt-1">Use "Hide" on articles to filter content.</p>
+        {/* Liked Articles */}
+        <DropdownSection 
+          title="Liked Articles" 
+          icon={Heart}
+          isOpen={openSections.includes('likes')}
+          onToggle={() => toggleSection('likes')}
+          count={prefs?.likedArticles?.length || 0}
+        >
+          {(!prefs?.likedArticles || prefs.likedArticles.length === 0) ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Heart className="mx-auto h-8 w-8 opacity-20 mb-3" />
+              <p className="text-sm">No liked articles yet.</p>
+              <p className="text-xs mt-1">Like articles to personalize your feed!</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {prefs.likedArticles.map((url: string, index: number) => (
+                <div 
+                  key={index} 
+                  className="flex items-center justify-between p-2 border border-border/30 rounded-lg"
+                >
+                  <p className="text-sm truncate text-muted-foreground flex-1">{url}</p>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-muted-foreground hover:text-destructive flex-shrink-0 h-8 w-8 p-0"
+                    onClick={() => handleRemoveLike(url)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  {prefs?.mutedTopics && prefs.mutedTopics.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2 text-sm text-muted-foreground uppercase tracking-wider">Muted Topics</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {prefs.mutedTopics.map((topic: string) => (
-                          <Badge key={topic} variant="outline" className="rounded-full">
-                            {topic}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {prefs?.mutedSources && prefs.mutedSources.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2 text-sm text-muted-foreground uppercase tracking-wider">Muted Sources</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {prefs.mutedSources.map((source: string) => (
-                          <Badge key={source} variant="outline" className="rounded-full">
-                            {source}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+              ))}
+            </div>
+          )}
+        </DropdownSection>
+
+        {/* Interests */}
+        <DropdownSection 
+          title="Your Interests" 
+          icon={Settings}
+          isOpen={openSections.includes('interests')}
+          onToggle={() => toggleSection('interests')}
+          count={prefs?.interests?.length || 0}
+        >
+          {(!prefs?.interests || prefs.interests.length === 0) ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Settings className="mx-auto h-8 w-8 opacity-20 mb-3" />
+              <p className="text-sm">No interests yet.</p>
+              <p className="text-xs mt-1">Like articles to train your feed!</p>
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {prefs.interests.map((interest: string) => (
+                <Badge 
+                  key={interest} 
+                  variant="secondary" 
+                  className="px-3 py-1.5 text-sm bg-[#1bab89]/10 text-[#1bab89] border border-[#1bab89]/30 rounded-full"
+                >
+                  {interest}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </DropdownSection>
+
+        {/* Hidden Content */}
+        <DropdownSection 
+          title="Hidden Content" 
+          icon={Slash}
+          isOpen={openSections.includes('muted')}
+          onToggle={() => toggleSection('muted')}
+          count={(prefs?.mutedTopics?.length || 0) + (prefs?.mutedSources?.length || 0)}
+        >
+          {((prefs?.mutedTopics?.length ?? 0) === 0 && (prefs?.mutedSources?.length ?? 0) === 0) ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Slash className="mx-auto h-8 w-8 opacity-20 mb-3" />
+              <p className="text-sm">Nothing hidden yet.</p>
+              <p className="text-xs mt-1">Use "Hide" on articles to filter content.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {prefs?.mutedTopics && prefs.mutedTopics.length > 0 && (
+                <div>
+                  <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wider">Muted Topics</h4>
+                  <div className="flex flex-wrap gap-1.5">
+                    {prefs.mutedTopics.map((topic: string) => (
+                      <Badge key={topic} variant="outline" className="rounded-full text-xs">
+                        {topic}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              {prefs?.mutedSources && prefs.mutedSources.length > 0 && (
+                <div>
+                  <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wider">Muted Sources</h4>
+                  <div className="flex flex-wrap gap-1.5">
+                    {prefs.mutedSources.map((source: string) => (
+                      <Badge key={source} variant="outline" className="rounded-full text-xs">
+                        {source}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DropdownSection>
+      </div>
     </div>
   );
 }

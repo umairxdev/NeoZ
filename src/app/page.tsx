@@ -65,10 +65,10 @@ function NewsFeed({ interests }: { interests: string[] }) {
 
       {/* Editorial Section Header */}
       <section>
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-0.5 bg-[#1bab89] shadow-[0_0_10px_rgba(27,171,137,0.5)]" />
-            <h2 className="text-2xl md:text-3xl font-normal tracking-tight" style={{ fontFamily: 'Instrument Serif, Georgia, serif' }}>
+        <div className="flex items-center justify-between mb-4 md:mb-6">
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="w-8 md:w-12 h-0.5 bg-[#1bab89] shadow-[0_0_10px_rgba(27,171,137,0.5)]" />
+            <h2 className="text-lg md:text-3xl font-normal tracking-tight" style={{ fontFamily: 'Instrument Serif, Georgia, serif' }}>
               {interests.length > 0 ? 'Your Personalized Feed' : 'Latest Stories'}
             </h2>
           </div>
@@ -100,14 +100,14 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="container py-6 md:py-10">
+    <div className="container py-4 md:py-10 px-3 md:px-4">
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
         {/* Main Content */}
         <div className="w-full lg:w-3/4 xl:w-2/3">
           <Suspense fallback={
             <div className="space-y-8">
-              <div className="aspect-[21/9] bg-muted animate-pulse rounded-2xl" />
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="aspect-[3/2] md:aspect-[21/9] bg-muted animate-pulse rounded-2xl" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 <ArticleSkeleton count={6} />
               </div>
             </div>

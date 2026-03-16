@@ -12,6 +12,7 @@ const CATEGORIES = [
   { href: '/category/technology', label: 'Tech' },
   { href: '/category/business', label: 'Business' },
   { href: '/category/science', label: 'Science' },
+  { href: '/category/sports', label: 'Sports' },
   { href: '/category/world', label: 'World' },
   { href: '/category/pakistan', label: 'Pakistan' },
   { href: '/category/south-asia', label: 'South Asia' },
@@ -35,6 +36,7 @@ export function Header() {
   const [bookmarkCount, setBookmarkCount] = React.useState(0);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [isSearchFocused, setIsSearchFocused] = React.useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   React.useEffect(() => {
     try {
@@ -44,7 +46,10 @@ export function Header() {
         setBookmarkCount(bookmarks.length);
       }
     } catch {}
-  }, []);
+
+    // Close mobile menu on route change
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,7 +86,17 @@ export function Header() {
             </div>
 
             {/* Right Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 md:gap-2">
+              {/* Mobile Menu Button */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="md:hidden"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
+              
               <Button variant="outline" size="sm" className="hidden sm:flex border-[#1bab89]/30 text-[#1bab89] hover:bg-[#1bab89]/10" render={<Link href="/dashboard" />}>
                 Dashboard
               </Button>
@@ -118,29 +133,31 @@ export function Header() {
             })}
           </nav>
         </div>
-      </header>
 
-      {/* Mobile Category Horizontal Scroll */}
-      <div className="md:hidden border-b border-border/50 bg-background/95 backdrop-blur-xl sticky top-16 z-40">
-        <div className="flex items-center gap-2 px-4 py-3 overflow-x-auto scrollbar-none">
-          {CATEGORIES.map((cat) => {
-            const isActive = pathname === cat.href || pathname.startsWith(cat.href + '/');
-            return (
-              <Link
-                key={cat.href}
-                href={cat.href}
-                className={`flex-shrink-0 px-4 py-1.5 text-sm font-medium transition-all duration-200 rounded-full ${
-                  isActive 
-                    ? 'text-[#1bab89] bg-[#1bab89]/10 border border-[#1bab89]/30' 
-                    : 'text-muted-foreground bg-secondary border border-transparent'
-                }`}
-              >
-                {cat.label}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
+        {/* Mobile Menu - Categories */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl py-4">
+            <nav className="flex flex-col gap-1 px-2">
+              {CATEGORIES.map((cat) => {
+                const isActive = pathname === cat.href || pathname.startsWith(cat.href + '/');
+                return (
+                  <Link
+                    key={cat.href}
+                    href={cat.href}
+                    className={`px-4 py-3 text-base font-medium transition-all duration-200 rounded-lg ${
+                      isActive 
+                        ? 'text-[#1bab89] bg-[#1bab89]/10' 
+                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                    }`}
+                  >
+                    {cat.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        )}
+      </header>
     </>
   );
 }

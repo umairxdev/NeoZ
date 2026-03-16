@@ -39,13 +39,13 @@ async function fetchFeed(source: FeedSource): Promise<Article[]> {
     if (!response.ok) {
       return [];
     }
-    
+
     const xml = await response.text();
     const feed = await parser.parseString(xml);
-    
+
     const articles: Article[] = [];
-    const items = feed.items.slice(0, 15);
-    
+    const items = feed.items.slice(0, 20);
+
     for (const item of items) {
       const article = normalizeItem(item, source);
       if (article) {
