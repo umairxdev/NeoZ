@@ -13,8 +13,9 @@ Live at: [neoz.vercel.app](https://neoz.vercel.app)
 ## What It Does
 
 - Aggregates articles across 11 categories: Technology, AI, Science, Business, Sports, World, Pakistan, South Asia, and more
-- Learns your interests automatically as you like, bookmark, or hide articles
+- Learns your interests automatically as you like or bookmark articles
 - Personalizes your feed server-side via cookie-based interest tracking — no account needed
+- Live local weather widget powered by Open-Meteo — no API key, no tracking
 - Full-text search across all articles
 - Dark/Light mode with system preference detection
 - Mobile-first responsive design with bottom navigation
@@ -30,6 +31,7 @@ Live at: [neoz.vercel.app](https://neoz.vercel.app)
 | Components | Custom shadcn-inspired UI |
 | Fonts | Syne (headings) + Outfit (body) |
 | RSS Parsing | rss-parser |
+| Weather | Open-Meteo API (free, no key) |
 | Deployment | Vercel (Serverless) |
 
 ---
@@ -39,7 +41,7 @@ Live at: [neoz.vercel.app](https://neoz.vercel.app)
 ```
 src/
 ├── app/
-│   ├── api/            # News, search, trending endpoints
+│   ├── api/            # News, search, trending, weather endpoints
 │   ├── article/[id]/   # Article detail pages
 │   ├── category/[slug] # Category pages
 │   ├── dashboard/      # User preferences
@@ -69,6 +71,12 @@ Interests are stored in a `neoz_interests` cookie (365-day expiry, comma-separat
 
 ---
 
+## Weather Widget
+
+NeoZ displays current local weather at the top of the homepage using the browser's native geolocation API and Open-Meteo — completely free, no API key required, no third-party tracking. The widget is silently hidden if the user denies location permission.
+
+---
+
 ## API Endpoints
 
 | Endpoint | Description |
@@ -77,6 +85,7 @@ Interests are stored in a `neoz_interests` cookie (365-day expiry, comma-separat
 | `/api/news/[category]` | Category-specific feed |
 | `/api/search` | Full-text search |
 | `/api/trending` | Trending topics |
+| `/api/weather` | Local weather via Open-Meteo |
 
 ---
 
