@@ -18,9 +18,13 @@ export function HeroArticle({ article, seed = 0 }: HeroArticleProps) {
   const fallbackImage = getCategoryFallback(article.category, seed, '1600');
   const [imgSrc, setImgSrc] = useState(article.image || fallbackImage);
 
+  const handleClick = () => {
+    sessionStorage.setItem('scrollPosition', window.scrollY.toString());
+  };
+
   return (
     <div className="relative group overflow-hidden rounded-2xl mb-8 aspect-[3/2] md:aspect-[21/9] lg:aspect-[2.5/1] shadow-2xl">
-      <Link href={articleUrl} className="block w-full h-full">
+      <Link href={articleUrl} onClick={handleClick} className="block w-full h-full">
         <div className="absolute inset-0">
           <Image
             src={imgSrc}

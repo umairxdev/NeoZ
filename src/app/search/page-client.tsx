@@ -48,7 +48,7 @@ function SearchResults() {
   };
 
   return (
-    <div className="container py-8 md:py-12 max-w-5xl">
+    <div className="max-w-[1400px] mx-auto px-4 py-8 md:py-12">
       <div className="flex flex-col mb-10 text-center items-center">
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">
           Search News

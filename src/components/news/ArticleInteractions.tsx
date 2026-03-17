@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Bookmark, ThumbsUp, ThumbsDown, EyeOff, Loader2 } from 'lucide-react';
+import { Bookmark, ThumbsUp, ThumbsDown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Article } from '@/types';
@@ -93,24 +93,48 @@ export function ArticleInteractions({ article }: ArticleInteractionsProps) {
     setLocalPreferences(prefs);
   };
 
-  async function handleInteraction(type: 'like' | 'dislike' | 'bookmark' | 'unlike' | 'unbookmark' | 'undislike' | 'hide') {
+  async function handleInteraction(type: 'like' | 'dislike' | 'bookmark' | 'unlike' | 'unbookmark' | 'undislike') {
     setIsLoading(true);
     
     try {
       if (type === 'like' || type === 'unlike') {
-        const newState = type === 'like' ? !isLiked : !isLiked;
+        const newState = type === 'like';
+        
+        if (isDisliked) {
+          const prefs = getLocalPreferences() as any;
+          if (prefs.dislikedArticles) prefs.dislikedArticles = prefs.dislikedArticles.filter((u: string) => u !== article.url);
+          setLocalPreferences(prefs);
+          setIsDisliked(false);
+        }
+        
         setIsLiked(newState);
         updatePreferences(newState ? 'like' : 'unlike');
         toast.success(newState ? 'Added to liked' : 'Removed from liked');
       } 
       else if (type === 'dislike' || type === 'undislike') {
-        const newState = type === 'dislike' ? !isDisliked : !isDisliked;
+        const newState = type === 'dislike';
+        
+        if (isLiked) {
+          const prefs = getLocalPreferences() as any;
+          if (prefs.likedArticles) prefs.likedArticles = prefs.likedArticles.filter((u: string) => u !== article.url);
+          setLocalPreferences(prefs);
+          setIsLiked(false);
+        }
+        
         setIsDisliked(newState);
         updatePreferences(newState ? 'dislike' : 'undislike');
         toast.success(newState ? 'Added to disliked' : 'Removed from disliked');
       }
       else if (type === 'bookmark' || type === 'unbookmark') {
-        const newState = type === 'bookmark' ? !isBookmarked : !isBookmarked;
+        const newState = type === 'bookmark';
+        
+        if (!newState && isDisliked) {
+          const prefs = getLocalPreferences() as any;
+          if (prefs.dislikedArticles) prefs.dislikedArticles = prefs.dislikedArticles.filter((u: string) => u !== article.url);
+          setLocalPreferences(prefs);
+          setIsDisliked(false);
+        }
+        
         setIsBookmarked(newState);
         
         const bookmarks = getLocalBookmarks();
@@ -123,16 +147,6 @@ export function ArticleInteractions({ article }: ArticleInteractionsProps) {
           setLocalBookmarks(filtered);
           toast.success('Article removed');
         }
-      }
-      else if (type === 'hide') {
-        const prefs = getLocalPreferences();
-        if (!prefs.dislikedArticles) prefs.dislikedArticles = [];
-        if (!prefs.dislikedArticles.includes(article.url)) {
-          prefs.dislikedArticles.push(article.url);
-          setLocalPreferences(prefs);
-          setIsDisliked(true);
-        }
-        toast.success('Article hidden');
       }
     } catch (error) {
       console.error('Interaction error:', error);
@@ -188,17 +202,6 @@ export function ArticleInteractions({ article }: ArticleInteractionsProps) {
         >
           <Bookmark className={`h-4 w-4 mr-2 ${isBookmarked ? 'fill-current' : ''}`} />
           {isBookmarked ? 'Saved' : 'Save'}
-        </Button>
-        
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="rounded-full text-muted-foreground hover:text-foreground"
-          onClick={() => handleInteraction('hide')}
-          disabled={isLoading}
-        >
-          <EyeOff className="h-4 w-4 mr-2" />
-          Hide
         </Button>
       </div>
     </div>

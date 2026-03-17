@@ -31,6 +31,10 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
+  icons: {
+    icon: '/icon.svg',
+    apple: '/icon.svg',
+  },
   robots: {
     index: true,
     follow: true,
@@ -112,7 +116,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${syne.variable} ${outfit.variable} min-h-screen bg-background antialiased flex flex-col`}>
+      <body className={`${syne.variable} ${outfit.variable} min-h-screen bg-background antialiased flex flex-col w-full`}>
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>

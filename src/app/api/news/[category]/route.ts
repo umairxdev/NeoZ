@@ -3,6 +3,11 @@ import { articleCache } from '@/lib/rss/cache';
 
 export const revalidate = 0;
 
+function countWords(text: string | undefined | null): number {
+  if (!text) return 0;
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ category: string }> }
@@ -58,6 +63,17 @@ export async function GET(
       filteredArticles.sort((a, b) => {
         const scoreDiff = (b.score || 0) - (a.score || 0);
         if (scoreDiff !== 0) return scoreDiff;
+        
+        const descLenDiff = countWords(b.description) - countWords(a.description);
+        if (descLenDiff !== 0) return descLenDiff;
+        
+        return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+      });
+    } else {
+      // No interests - sort by description length, then by date
+      filteredArticles.sort((a, b) => {
+        const descLenDiff = countWords(b.description) - countWords(a.description);
+        if (descLenDiff !== 0) return descLenDiff;
         return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
       });
     }

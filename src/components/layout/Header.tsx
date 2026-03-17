@@ -2,11 +2,13 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Search, Bookmark, Home, Compass, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Input } from '@/components/ui/input';
+import { MiniWeatherWidget } from '@/components/weather/MiniWeatherWidget';
 
 const CATEGORIES = [
   { href: '/category/technology', label: 'Tech' },
@@ -19,14 +21,23 @@ const CATEGORIES = [
 ];
 
 function NeoZLogo() {
+  const handleClick = (e: React.MouseEvent) => {
+    if (window.location.pathname === '/') {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
-    <Link href="/" className="flex items-center group">
-      <span className="text-2xl md:text-3xl font-extrabold tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>
-        Neo
-      </span>
-      <span className="text-2xl md:text-3xl font-extrabold tracking-tight text-[#1bab89] drop-shadow-[0_0_10px_rgba(27,171,137,0.6)] group-hover:drop-shadow-[0_0_20px_rgba(27,171,137,0.8)] transition-all duration-300">
-        Z
-      </span>
+    <Link href="/" onClick={handleClick} className="flex items-center group">
+      <Image 
+        src="/Logo_neoz.png" 
+        alt="NeoZ" 
+        width={480}
+        height={160}
+        className="h-28 w-auto md:h-32"
+        priority
+      />
     </Link>
   );
 }
@@ -96,6 +107,7 @@ export function Header() {
               >
                 {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
+              <MiniWeatherWidget />
               
               <Button variant="outline" size="sm" className="hidden sm:flex border-[#1bab89]/30 text-[#1bab89] hover:bg-[#1bab89]/10" render={<Link href="/dashboard" />}>
                 Dashboard
@@ -180,7 +192,7 @@ export function MobileNav() {
   const navItems = [
     { href: '/', icon: Home, label: 'Home' },
     { href: '/search', icon: Search, label: 'Search' },
-    { href: '/dashboard', icon: Bookmark, label: 'Saved', count: bookmarkCount },
+    { href: '/dashboard', icon: Bookmark, label: 'Dashboard', count: bookmarkCount },
   ];
 
   return (

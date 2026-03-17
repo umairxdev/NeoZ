@@ -1,18 +1,39 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatDistanceToNow } from 'date-fns';
+import { ThumbsUp, ThumbsDown, Bookmark } from 'lucide-react';
 import { Article } from '@/types';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { getCategoryFallback } from '@/lib/category-fallbacks';
 
 interface ArticleCardProps {
   article: Article;
   featured?: boolean;
   index?: number;
+}
+
+const LOCAL_STORAGE_KEY = 'newsstream_bookmarks';
+const PREFERENCES_KEY = 'newsstream_preferences';
+
+function getLocalPreferences() {
+  try {
+    const stored = localStorage.getItem(PREFERENCES_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return { likedArticles: [], dislikedArticles: [], interests: [], mutedTopics: [], mutedSources: [] };
+}
+
+function getLocalBookmarks(): Article[] {
+  try {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return [];
 }
 
 export function ArticleCard({ article, featured = false, index = 0 }: ArticleCardProps) {
@@ -22,10 +43,87 @@ export function ArticleCard({ article, featured = false, index = 0 }: ArticleCar
     [article.category, index]
   );
   const [imgSrc, setImgSrc] = useState(article.image || fallbackImage);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isDisliked, setIsDisliked] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+
+  useEffect(() => {
+    const prefs = getLocalPreferences();
+    const bookmarks = getLocalBookmarks();
+    setIsLiked(prefs.likedArticles?.includes(article.url) || false);
+    setIsDisliked(prefs.dislikedArticles?.includes(article.url) || false);
+    setIsBookmarked(bookmarks.some(b => b.url === article.url));
+  }, [article.url]);
+
+  const handleClick = () => {
+    sessionStorage.setItem('scrollPosition', window.scrollY.toString());
+  };
+
+  const handleMobileInteraction = async (e: React.MouseEvent, type: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const prefs = getLocalPreferences();
+    
+    if (type === 'like') {
+      if (isDisliked) {
+        if (!prefs.likedArticles) prefs.likedArticles = [];
+        prefs.likedArticles = prefs.likedArticles.filter((u: string) => u !== article.url);
+        if (prefs.dislikedArticles) prefs.dislikedArticles = prefs.dislikedArticles.filter((u: string) => u !== article.url);
+        localStorage.setItem(PREFERENCES_KEY, JSON.stringify(prefs));
+        setIsDisliked(false);
+      }
+      setIsLiked(!isLiked);
+      if (!isLiked) {
+        if (!prefs.likedArticles) prefs.likedArticles = [];
+        prefs.likedArticles.push(article.url);
+        if (!prefs.interests) prefs.interests = [];
+        if (!prefs.interests.includes(article.category.toLowerCase())) {
+          prefs.interests.push(article.category.toLowerCase());
+        }
+      } else {
+        if (prefs.likedArticles) prefs.likedArticles = prefs.likedArticles.filter((u: string) => u !== article.url);
+      }
+      localStorage.setItem(PREFERENCES_KEY, JSON.stringify(prefs));
+    } else if (type === 'dislike') {
+      if (isLiked) {
+        if (!prefs.dislikedArticles) prefs.dislikedArticles = [];
+        prefs.dislikedArticles = prefs.dislikedArticles.filter((u: string) => u !== article.url);
+        if (prefs.likedArticles) prefs.likedArticles = prefs.likedArticles.filter((u: string) => u !== article.url);
+        localStorage.setItem(PREFERENCES_KEY, JSON.stringify(prefs));
+        setIsLiked(false);
+      }
+      setIsDisliked(!isDisliked);
+      if (!isDisliked) {
+        if (!prefs.dislikedArticles) prefs.dislikedArticles = [];
+        prefs.dislikedArticles.push(article.url);
+      } else {
+        if (prefs.dislikedArticles) prefs.dislikedArticles = prefs.dislikedArticles.filter((u: string) => u !== article.url);
+      }
+      localStorage.setItem(PREFERENCES_KEY, JSON.stringify(prefs));
+    } else if (type === 'bookmark') {
+      const bookmarks = getLocalBookmarks();
+      if (isBookmarked) {
+        const filtered = bookmarks.filter(b => b.url !== article.url);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(filtered));
+        setIsBookmarked(false);
+      } else {
+        if (isDisliked) {
+          if (!prefs.dislikedArticles) prefs.dislikedArticles = [];
+          prefs.dislikedArticles = prefs.dislikedArticles.filter((u: string) => u !== article.url);
+          localStorage.setItem(PREFERENCES_KEY, JSON.stringify(prefs));
+          setIsDisliked(false);
+        }
+        bookmarks.push(article);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(bookmarks));
+        setIsBookmarked(true);
+      }
+    }
+  };
 
   return (
     <Card className={`group overflow-hidden flex flex-col h-full bg-card border-border/50 transition-all duration-300 card-glow ${featured ? 'md:col-span-2 md:row-span-2' : ''}`}>
-      <Link href={articleUrl} className="relative block w-full overflow-hidden" style={{ aspectRatio: featured ? '16/9' : '16/12' }}>
+      <Link href={articleUrl} onClick={handleClick} className="relative block w-full overflow-hidden" style={{ aspectRatio: featured ? '16/9' : '16/12' }}>
         <Image
           src={imgSrc}
           alt={article.title}
@@ -52,7 +150,7 @@ export function ArticleCard({ article, featured = false, index = 0 }: ArticleCar
             {formatDistanceToNow(new Date(article.publishedAt), { addSuffix: true })}
           </time>
         </div>
-        <Link href={articleUrl} className="group-hover:text-[#1bab89] transition-colors duration-200">
+        <Link href={articleUrl} onClick={handleClick} className="group-hover:text-[#1bab89] transition-colors duration-200">
           <h3 className={`font-normal tracking-tight line-clamp-2 leading-tight ${featured ? 'text-lg md:text-2xl lg:text-3xl' : 'text-base md:text-lg'}`} style={{ fontFamily: 'Instrument Serif, Georgia, serif' }}>
             {article.title}
           </h3>
@@ -74,6 +172,34 @@ export function ArticleCard({ article, featured = false, index = 0 }: ArticleCar
           ))}
         </div>
       </CardFooter>
+
+      {/* Mobile Interaction Buttons */}
+      <div className="md:hidden flex items-center justify-end gap-0 px-2 pb-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          className={`h-7 w-7 ${isLiked ? 'text-[#1bab89]' : 'text-muted-foreground'}`}
+          onClick={(e) => handleMobileInteraction(e, 'like')}
+        >
+          <ThumbsUp className={`h-3.5 w-3.5 ${isLiked ? 'fill-current' : ''}`} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={`h-7 w-7 ${isDisliked ? 'text-destructive' : 'text-muted-foreground'}`}
+          onClick={(e) => handleMobileInteraction(e, 'dislike')}
+        >
+          <ThumbsDown className={`h-3.5 w-3.5 ${isDisliked ? 'fill-current' : ''}`} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={`h-7 w-7 ${isBookmarked ? 'text-[#1bab89]' : 'text-muted-foreground'}`}
+          onClick={(e) => handleMobileInteraction(e, 'bookmark')}
+        >
+          <Bookmark className={`h-3.5 w-3.5 ${isBookmarked ? 'fill-current' : ''}`} />
+        </Button>
+      </div>
     </Card>
   );
 }

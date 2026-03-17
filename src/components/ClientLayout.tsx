@@ -13,13 +13,15 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
       enableSystem
       disableTransitionOnChange
     >
-      <Header />
-      <main className="flex-1 hide-on-mobile-nav">
-        {children}
-      </main>
-      <MobileNav />
-      <Toaster />
-      <CookieConsent />
+      <div className="min-h-screen flex flex-col w-full">
+        <Header />
+        <main className="flex-1 w-full hide-on-mobile-nav">
+          {children}
+        </main>
+        <MobileNav />
+        <Toaster />
+        <CookieConsent />
+      </div>
     </ThemeProvider>
   );
 }

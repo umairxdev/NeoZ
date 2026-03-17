@@ -13,6 +13,11 @@ function getInterestsFromCookie(request: Request): string[] {
   return match[1].split(',').filter(Boolean).map(i => i.trim().toLowerCase());
 }
 
+function countWords(text: string | undefined | null): number {
+  if (!text) return 0;
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -85,17 +90,23 @@ export async function GET(request: Request) {
         return { ...article, score };
       });
       
-      // Sort by score (desc) then by date (desc)
+      // Sort by score (desc), then by description length (desc), then by date (desc)
       sortedArticles.sort((a, b) => {
         const scoreDiff = (b.score || 0) - (a.score || 0);
         if (scoreDiff !== 0) return scoreDiff;
+        
+        const descLenDiff = countWords(b.description) - countWords(a.description);
+        if (descLenDiff !== 0) return descLenDiff;
+        
         return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
       });
     } else {
-      // No interests - just sort by date
-      if (section === 'latest') {
-        sortedArticles.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
-      }
+      // No interests - sort by description length, then by date
+      sortedArticles.sort((a, b) => {
+        const descLenDiff = countWords(b.description) - countWords(a.description);
+        if (descLenDiff !== 0) return descLenDiff;
+        return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+      });
     }
 
     // Pagination

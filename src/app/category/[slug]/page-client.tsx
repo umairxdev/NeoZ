@@ -46,6 +46,21 @@ function CategoryFeed({ category, interests }: { category: string; interests: st
     });
   }, [category]);
 
+  // Restore scroll after content loads
+  useEffect(() => {
+    if (!isLoading && initialArticles.length > 0) {
+      const savedPosition = sessionStorage.getItem('scrollPosition');
+      if (savedPosition) {
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            window.scrollTo(0, parseInt(savedPosition, 10));
+            sessionStorage.removeItem('scrollPosition');
+          }, 100);
+        });
+      }
+    }
+  }, [isLoading, initialArticles]);
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -111,7 +126,7 @@ export default function CategoryPage() {
   }
 
   return (
-    <div className="container py-6 md:py-12 px-4">
+    <div className="max-w-[1400px] mx-auto px-4 py-6 md:py-12">
       <div className="flex flex-col mb-6 md:mb-8 text-center md:text-left">
         <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight capitalize mb-2">
           {normalizedSlug} News

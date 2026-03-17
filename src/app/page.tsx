@@ -17,6 +17,21 @@ function NewsFeed({ interests }: { interests: string[] }) {
     fetchInitialNews();
   }, [interests]);
 
+  // Restore scroll after content loads
+  useEffect(() => {
+    if (!isLoading && articles.length > 0) {
+      const savedPosition = sessionStorage.getItem('scrollPosition');
+      if (savedPosition) {
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            window.scrollTo(0, parseInt(savedPosition, 10));
+            sessionStorage.removeItem('scrollPosition');
+          }, 100);
+        });
+      }
+    }
+  }, [isLoading, articles]);
+
   async function fetchInitialNews() {
     try {
       const interestParam = interests.length > 0 ? `&interests=${encodeURIComponent(interests.join(','))}` : '';
@@ -105,10 +120,12 @@ export default function HomePage() {
         }
       }
     } catch {}
+
+    // Scroll restoration moved to NewsFeed component after content loads
   }, []);
 
   return (
-    <div className="container py-4 md:py-10 px-3 md:px-4">
+    <div className="max-w-[1400px] mx-auto px-4 py-4 md:py-10">
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
         {/* Main Content */}
         <div className="w-full lg:w-3/4 xl:w-2/3">
